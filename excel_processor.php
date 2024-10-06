@@ -11,7 +11,11 @@ use PhpOffice\PhpSpreadsheet\RichText;
  */
 function loadSpreadsheet($inputFileName)
 {
-    return IOFactory::load($inputFileName);
+    try {
+        return IOFactory::load($inputFileName);
+    } catch (Exception $e) {
+        throw $e;
+    }
 }
 
 /**
@@ -76,21 +80,16 @@ function processRow($rowData, &$schedule, &$timeSlots, $currentDay, $currentTime
     $professor = trim($rowData[5] ?? '');
     $audience = trim($rowData[6] ?? '');
 
-    // Логируем входящие данные
-    file_put_contents('log.txt', date('Y-m-d H:i:s') . " - Обработка строки: " . print_r($rowData, true) . "\n", FILE_APPEND);
-
     // Обновляем текущий день, если указан новый день недели
     if (!empty($dayOfWeek)) {
         $currentDay = $dayOfWeek;
         initializeDay($currentDay, $timeSlots);
-        file_put_contents('log.txt', date('Y-m-d H:i:s') . " - Новый день недели: $currentDay\n", FILE_APPEND);
     }
 
     // Обновляем текущее время, если указано новое время
     if (!empty($time)) {
         $currentTime = $time;
         updateTimeSlots($currentDay, $currentTime, $timeSlots);
-        file_put_contents('log.txt', date('Y-m-d H:i:s') . " - Новое время: $currentTime\n", FILE_APPEND);
     }
 
     // Добавляем информацию о занятии, если указана дисциплина
@@ -101,19 +100,16 @@ function processRow($rowData, &$schedule, &$timeSlots, $currentDay, $currentTime
                 'Ф.И.О Преподавателя' => [],
                 'Аудитория' => []
             ];
-            file_put_contents('log.txt', date('Y-m-d H:i:s') . " - Инициализация записи для $currentDay на время $currentTime.\n", FILE_APPEND);
         }
 
         $schedule[$currentDay][$currentTime]['Дисциплина'][] = $discipline;
         $schedule[$currentDay][$currentTime]['Ф.И.О Преподавателя'][] = $professor;
         $schedule[$currentDay][$currentTime]['Аудитория'][] = !empty($audience) ? $audience : 'Не указано';
-
-        // Логируем добавленные данные
-        file_put_contents('log.txt', date('Y-m-d H:i:s') . " - Добавлены данные: Дисциплина: $discipline, Преподаватель: $professor, Аудитория: $audience\n", FILE_APPEND);
     }
 
     return [$currentDay, $currentTime];
 }
+
 
 /**
  * Инициализирует день недели в массиве временных слотов
@@ -141,44 +137,131 @@ function updateTimeSlots($currentDay, $currentTime, &$timeSlots)
 }
 
 /**
- * Главная функция для обработки файла Excel
+ * Обработка файла Excel с использованием кэша
  * @param string $inputFileName Путь к файлу Excel
  * @param string $cacheFile Путь к файлу кэша
- * @param bool $flagUpdateChache Флаг обновления кэша
+ * @param bool $flagUpdateCache Флаг обновления кэша
  * @return array Расписание и временные слоты
  */
-function processExcelFile($inputFileName, $cacheFile, $flagUpdateChache = false)
+function processExcelFile($inputFileName, $cacheFile, $flagUpdateCache = false)
 {
-    $logFile = __DIR__ . '/log.txt'; // Полный путь к логам
-
-    // Логируем входящие параметры
-    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Входные параметры: inputFileName = $inputFileName, cacheFile = $cacheFile, flagUpdateChache = $flagUpdateChache \n", FILE_APPEND);
-
-    // Проверяем, существует ли кэш
-    if (file_exists($cacheFile) && !$flagUpdateChache) {
-        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Используем кэш: $cacheFile\n", FILE_APPEND);
-        return include($cacheFile); // Возвращаем кэшированные данные
+    // Если кэш существует и обновление не требуется, возвращаем кэшированные данные
+    if (file_exists($cacheFile) && !$flagUpdateCache) {
+        return include($cacheFile);
     }
 
+    // Обновляем и записываем кэш
+    return updateCache($inputFileName, $cacheFile);
+}
+
+/**
+ * Обновление кэша с данными из файла Excel
+ * @param string $inputFileName Путь к файлу Excel
+ * @param string $cacheFile Путь к файлу кэша
+ * @return array Расписание и временные слоты или пустой массив в случае ошибки
+ */
+function updateCache($inputFileName, $cacheFile)
+{
+    $logFile = __DIR__ . '/webhook/webhook_logs.txt';
     try {
-        // Загружаем файл Excel
+        // Проверка на существование файла Excel
+        if (!file_exists($inputFileName)) {
+            // Логируем начало парсинга
+            file_put_contents($logFile, date('Y-m-d H:i:s') . " - Файл Excel не найден: $inputFileName\n", FILE_APPEND);
+            throw new Exception("Файл Excel не найден: $inputFileName");
+        }
+
+        // Загружаем и парсим файл Excel
         $spreadsheet = loadSpreadsheet($inputFileName);
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Парсим лист и возвращаем расписание
-        $scheduleData = parseSheet($sheet);
-    } catch (Exception $e) {
-        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка при загрузке или обработке файла: " . $e->getMessage() . "\n", FILE_APPEND);
-        return []; // Возвращаем пустой массив в случае ошибки
-    }
+        // Логируем начало парсинга
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Начинаем парсинг листа Excel.\n", FILE_APPEND);
 
-    // Кэшируем данные в файл
+        $scheduleData = parseSheet($sheet);
+
+        // Проверяем, что данные были успешно распарсены
+        if (empty($scheduleData)) {
+            file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Расписание не найдено в файле: $inputFileName\n", FILE_APPEND);
+            throw new Exception("Ошибка: Расписание не найдено в файле: $inputFileName");
+        }
+
+        // Записываем кэш
+        writeCache(
+            $cacheFile,
+            $scheduleData
+        );
+
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Кэш обновлен: $cacheFile\n", FILE_APPEND);
+        return $scheduleData;
+    } catch (Exception $e) {
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка обновления кэша: " . $e->getMessage() . "\n", FILE_APPEND);
+        return [];
+    }
+}
+
+
+/**
+ * Запись данных в кэш
+ * @param string $cacheFile Путь к файлу кэша
+ * @param array $data Данные для кэширования
+ * @return string Статус операции ('success' или 'error')
+ */
+function writeCache($cacheFile, $data)
+{
+    $logFile = __DIR__ . '/webhook/webhook_logs.txt';
     if (!empty($cacheFile)) {
-        file_put_contents($cacheFile, '<?php return ' . var_export($scheduleData, true) . ';');
-        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Кэш успешно обновлён: $cacheFile\n", FILE_APPEND);
+        file_put_contents($cacheFile, '<?php return ' . var_export($data, true) . ';');
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Кэш успешно перезаписан.\n", FILE_APPEND);
     } else {
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Путь к кэшу пустой.\n", FILE_APPEND);
     }
+}
 
-    return $scheduleData;
+// Функция для вывода массива в таблицу с добавлением пустых строк
+function renderTable($arSchedule)
+{
+    echo '<table border="1" cellpadding="5" cellspacing="0" style="width: 100%;">';
+    echo '<thead><tr><th>Время</th><th>Дисциплина</th><th>Ф.И.О Преподавателя</th><th>Аудитория</th></tr></thead>';
+    echo '<tbody>';
+
+    // Перебор дней недели
+    foreach ($arSchedule['schedule'] as $day => $times) {
+        // Добавляем отступ перед каждым днем
+        echo '<tr><td colspan="4" style="padding:10px; font-weight:bold; background-color:#f0f0f0; text-align: center; font-size: 20px;">' . htmlspecialchars($day) . '</td></tr>';
+
+        // Для каждого времени занятий
+        foreach ($arSchedule['timeSlots'][$day] as $time) {
+            // Если есть занятия в этот временной интервал
+            if (isset($times[$time])) {
+                $info = $times[$time];
+                $rowSpan = count($info['Дисциплина']); // Количество строк для объединения
+
+                for ($i = 0; $i < $rowSpan; $i++) {
+                    echo '<tr>';
+
+                    // Вывод времени только для первой строки этого времени
+                    if ($i == 0) {
+                        echo '<td rowspan="' . $rowSpan . '">' . htmlspecialchars($time) . '</td>';
+                    }
+
+                    // Вывод дисциплины, преподавателя и аудитории
+                    echo '<td>' . htmlspecialchars($info['Дисциплина'][$i]) . '</td>';
+                    echo '<td>' . htmlspecialchars($info['Ф.И.О Преподавателя'][$i]) . '</td>';
+                    echo '<td>' . htmlspecialchars($info['Аудитория'][$i]) . '</td>';
+
+                    echo '</tr>';
+                }
+            } else {
+                // Если занятий нет, добавляем пустую строку
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($time) . '</td>';
+                echo '<td colspan="3" style="text-align:center;">-</td>';
+                echo '</tr>';
+            }
+        }
+    }
+
+    echo '</tbody>';
+    echo '</table>';
 }

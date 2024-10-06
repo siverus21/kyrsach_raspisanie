@@ -3,58 +3,57 @@
 $logFile = __DIR__ . '/webhook_logs.txt'; // Полный путь к логам
 $cacheDir = __DIR__ . '/../cache'; // Полный путь к директории кэша
 
+// Проверка прав на запись в директорию логов
+if (!is_writable(__DIR__)) {
+    error_log("Ошибка: Директория для логов не доступна для записи.");
+    exit('Ошибка: Директория для логов не доступна для записи.');
+}
+
 // Проверяем метод запроса
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Получен POST запрос.\n", FILE_APPEND);
+
     $webhookData = file_get_contents('php://input');
     $webhookData = html_entity_decode($webhookData);
+
+    // Логируем входные данные вебхука для отладки
+    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Данные вебхука: $webhookData\n", FILE_APPEND);
+
     $dataArray = json_decode($webhookData, true);
 
-    // Логируем полученные данные
-    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Получены данные:\n" . print_r($dataArray, true) . "\n", FILE_APPEND);
+    // Проверяем корректность данных
+    if (!empty($dataArray) && isset($dataArray['File-Path'])) {
+        $filePath = $dataArray['File-Path'];
 
-    if (!empty($dataArray)) {
-        // Извлекаем путь к файлу
-        $filePath = $dataArray['File-Path'] ?? null;
-        $fileName = str_replace(array("test", ".xlsm"), "", basename($filePath));
+        // Логируем путь к файлу
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Путь к файлу: $filePath\n", FILE_APPEND);
 
-        if ($filePath) {
+        // Проверяем наличие файла
+        if (file_exists($filePath)) {
+            $fileName = str_replace(array("test", ".xlsm"), "", basename($filePath));
             $cacheFile = $cacheDir . '/schedule_cache_' . $fileName . '.php';
 
-            // Проверяем, существует ли директория для кэша
-            if (!is_dir($cacheDir)) {
-                mkdir($cacheDir, 0777, true);
-                file_put_contents($logFile, date('Y-m-d H:i:s') . " - Создана директория кэша: $cacheDir\n", FILE_APPEND);
-            }
-
-            require __DIR__ . '/../vendor/autoload.php';
-            require __DIR__ . '/../excel_processor.php';
-
             try {
-                // Задержка в 1 секунду
-                sleep(1);
+                file_put_contents($logFile, date('Y-m-d H:i:s') . " - Начинаем обработку файла: $filePath\n", FILE_APPEND);
 
-                // Обрабатываем файл Excel и обновляем кэш
-                $arSchedule = processExcelFile($filePath, $cacheFile, true);
+                require_once __DIR__ . '/../excel_processor.php';
+                require_once __DIR__ . '/../vendor/autoload.php';
 
-                // Логируем успешную обработку и обновление кэша
+                // Обновление кэша
+                $scheduleData = updateCache($filePath, $cacheFile);
+
+                // Логируем успешное обновление
                 file_put_contents($logFile, date('Y-m-d H:i:s') . " - Успешно обработан файл: $filePath\n", FILE_APPEND);
-
-                // Проверяем, создался ли новый кэш
-                if (file_exists($cacheFile)) {
-                    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Кэш успешно обновлён: $cacheFile\n", FILE_APPEND);
-                } else {
-                    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Кэш не обновлён!\n", FILE_APPEND);
-                }
             } catch (Exception $e) {
-                // Логируем ошибки при обработке файла
                 file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка при обработке файла: {$e->getMessage()}\n", FILE_APPEND);
             }
         } else {
-            file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Не указан путь к файлу в данных вебхука.\n", FILE_APPEND);
+            file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Файл не найден $filePath\n", FILE_APPEND);
         }
     } else {
-        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка обработки, исходные данные:\n" . htmlspecialchars($webhookData) . "\n", FILE_APPEND);
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Некорректные данные вебхука.\n", FILE_APPEND);
     }
 } else {
-    echo "<h2>Метод запроса не поддерживается. Используйте POST для отправки вебхука.</h2>";
+    file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Метод запроса не поддерживается.\n", FILE_APPEND);
+    echo json_encode(['status' => 'error', 'message' => 'Метод запроса не поддерживается']);
 }

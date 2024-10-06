@@ -1,0 +1,40 @@
+2024-10-06 03:31:10 - Получен POST запрос.
+2024-10-06 03:31:10 - Данные вебхука: {"message":"Файл Excel был сохранен", "File-Path":"D:\\OSPanel\\domains\\kyrsach\\excel\\test4.xlsm", "File-Name":"test4.xlsm"}
+2024-10-06 03:31:10 - Путь к файлу: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:31:10 - Начинаем обработку файла: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:31:10 - Начинаем парсинг листа Excel.
+2024-10-06 03:31:10 - Кэш успешно перезаписан.
+2024-10-06 03:31:10 - Кэш обновлен: D:\OSPanel\domains\kyrsach\webhook/../cache/schedule_cache_4.php
+2024-10-06 03:31:10 - Успешно обработан файл: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:43 - Получен POST запрос.
+2024-10-06 03:38:43 - Данные вебхука: {"message":"Файл Excel был сохранен", "File-Path":"D:\\OSPanel\\domains\\kyrsach\\excel\\test4.xlsm", "File-Name":"test4.xlsm"}
+2024-10-06 03:38:43 - Путь к файлу: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:43 - Начинаем обработку файла: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:43 - Начинаем парсинг листа Excel.
+2024-10-06 03:38:43 - Кэш успешно перезаписан.
+2024-10-06 03:38:43 - Кэш обновлен: D:\OSPanel\domains\kyrsach\webhook/../cache/schedule_cache_4.php
+2024-10-06 03:38:43 - Успешно обработан файл: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:51 - Получен POST запрос.
+2024-10-06 03:38:51 - Данные вебхука: {"message":"Файл Excel был сохранен", "File-Path":"D:\\OSPanel\\domains\\kyrsach\\excel\\test4.xlsm", "File-Name":"test4.xlsm"}
+2024-10-06 03:38:51 - Путь к файлу: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:51 - Начинаем обработку файла: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:51 - Начинаем парсинг листа Excel.
+2024-10-06 03:38:51 - Кэш успешно перезаписан.
+2024-10-06 03:38:51 - Кэш обновлен: D:\OSPanel\domains\kyrsach\webhook/../cache/schedule_cache_4.php
+2024-10-06 03:38:51 - Успешно обработан файл: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:55 - Получен POST запрос.
+2024-10-06 03:38:55 - Данные вебхука: {"message":"Файл Excel был сохранен", "File-Path":"D:\\OSPanel\\domains\\kyrsach\\excel\\test4.xlsm", "File-Name":"test4.xlsm"}
+2024-10-06 03:38:55 - Путь к файлу: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:55 - Начинаем обработку файла: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:38:56 - Начинаем парсинг листа Excel.
+2024-10-06 03:38:56 - Кэш успешно перезаписан.
+2024-10-06 03:38:56 - Кэш обновлен: D:\OSPanel\domains\kyrsach\webhook/../cache/schedule_cache_4.php
+2024-10-06 03:38:56 - Успешно обработан файл: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:41:15 - Получен POST запрос.
+2024-10-06 03:41:15 - Данные вебхука: {"message":"Файл Excel был сохранен", "File-Path":"D:\\OSPanel\\domains\\kyrsach\\excel\\test4.xlsm", "File-Name":"test4.xlsm"}
+2024-10-06 03:41:15 - Путь к файлу: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:41:15 - Начинаем обработку файла: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
+2024-10-06 03:41:15 - Начинаем парсинг листа Excel.
+2024-10-06 03:41:15 - Кэш успешно перезаписан.
+2024-10-06 03:41:15 - Кэш обновлен: D:\OSPanel\domains\kyrsach\webhook/../cache/schedule_cache_4.php
+2024-10-06 03:41:15 - Успешно обработан файл: D:\OSPanel\domains\kyrsach\excel\test4.xlsm
