@@ -1,5 +1,7 @@
 {
     "require": {
-        "phpoffice/phpspreadsheet": "^2.1"
+        "phpoffice/phpspreadsheet": "^2.1",
+        "cboden/ratchet": "^0.4.4",
+        "textalk/websocket": "^1.6"
     }
 }

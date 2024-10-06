@@ -180,6 +180,14 @@ function updateCache($inputFileName, $cacheFile)
 
         $scheduleData = parseSheet($sheet);
 
+        // Отправляем обновленные данные через WebSocket
+        $socket = fsockopen('kyrsach', 8081);
+        if ($socket) {
+            $message = json_encode(['schedule' => $scheduleData]);
+            fwrite($socket, $message);
+            fclose($socket);
+        }
+
         // Проверяем, что данные были успешно распарсены
         if (empty($scheduleData)) {
             file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Расписание не найдено в файле: $inputFileName\n", FILE_APPEND);
@@ -192,14 +200,18 @@ function updateCache($inputFileName, $cacheFile)
             $scheduleData
         );
 
+        // Логируем успешное обновление кэша
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Кэш обновлен: $cacheFile\n", FILE_APPEND);
+
+        // Отправляем обновление по WebSocket
+        sendWebSocketNotification($scheduleData);
+
         return $scheduleData;
     } catch (Exception $e) {
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка обновления кэша: " . $e->getMessage() . "\n", FILE_APPEND);
         return [];
     }
 }
-
 
 /**
  * Запись данных в кэш
@@ -217,6 +229,32 @@ function writeCache($cacheFile, $data)
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - Ошибка: Путь к кэшу пустой.\n", FILE_APPEND);
     }
 }
+
+/**
+ * Отправляет сообщение через WebSocket с обновленными данными
+ * @param array $scheduleData Обновленные данные расписания
+ */
+function sendWebSocketNotification($scheduleData)
+{
+    try {
+        // Подключаемся к WebSocket серверу
+        $wsClient = new WebSocket\Client("ws://kyrsach:8081");
+
+        // Формируем сообщение с обновлёнными данными
+        $message = json_encode([
+            'status' => 'updated',
+            'schedule' => $scheduleData
+        ]);
+
+        // Отправляем сообщение
+        $wsClient->send($message);
+        $wsClient->close();
+    } catch (Exception $e) {
+        // Логируем ошибку при отправке сообщения по WebSocket
+        file_put_contents(__DIR__ . '/webhook/webhook_logs.txt', date('Y-m-d H:i:s') . " - Ошибка WebSocket: " . $e->getMessage() . "\n", FILE_APPEND);
+    }
+}
+
 
 // Функция для вывода массива в таблицу с добавлением пустых строк
 function renderTable($arSchedule)
