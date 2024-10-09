@@ -17,8 +17,6 @@
             </div>
         <? endfor; ?>
     </div>
-
-    <h1>Это текст</h1>
 </body>
 
 </html>
