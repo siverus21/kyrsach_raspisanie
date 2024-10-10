@@ -38,8 +38,11 @@ $execution_time = $end_time - $start_time;
 </head>
 
 <body>
+    <div class="">
+    </div>
     <div class="schedule-table">
-        <? renderTable($arSchedule); ?>
+        <? renderTable($arSchedule);
+        ?>
     </div>
     <script>
         var socket = new WebSocket('ws://kyrsach:8081');
