@@ -1,6 +1,4 @@
-<?php
-// Пример простого WebSocket-сервера на PHP
-require 'vendor/autoload.php';
+<?
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;

@@ -1,3 +1,8 @@
+<?
+require __DIR__ . '/../config.php';
+require AUTOLOAD_PATH;
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,11 +14,7 @@
     <link rel="stylesheet" href="/styles/main/style.css">
 </head>
 
-<body style="height: 80vh;">
-    <div class="iframe-block">
-        <iframe src="http://kyrsach/" frameborder="0" width="80%" height="100%"
-            style="margin: 0 auto;"></iframe>
-    </div>
-</body>
+<body>
+    <header>
 
-</html>
+    </header>
