@@ -1,25 +1,4 @@
 <?
-function getDirContents($dir, &$results = array(), $baseDir = "")
-{
-    if (empty($baseDir)) {
-        $baseDir = realpath($dir);
-    }
-
-    $files = scandir($dir);
-
-    foreach ($files as $key => $value) {
-        $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
-        if (!is_dir($path)) {
-            // Убираем базовый путь из результата и заменяем \ на /
-            $results[] = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, "", $path));
-        } else if ($value != "." && $value != "..") {
-            getDirContents($path, $results, $baseDir);
-        }
-    }
-
-    return $results;
-}
-
 function getSubdirectories($dir)
 {
     $subdirectories = [];
@@ -34,12 +13,39 @@ function getSubdirectories($dir)
             if ($item !== '.' && $item !== '..') {
                 $path = realpath($dir . DIRECTORY_SEPARATOR . $item);
                 // Проверяем, является ли элемент директорией
-                if (is_dir($path)) {
+                // if (is_dir($path)) {
                     $subdirectories[] = $item; // Добавляем имя директории в массив
-                }
+                // } else {
+                //     $subdirectories[] = getDirContents();
+                // }
             }
         }
     }
 
     return $subdirectories; // Возвращаем массив имен поддиректорий
+}
+
+function replaceSpacesInNames($dir)
+{
+    // Открываем директорию
+    if ($handle = opendir($dir)) {
+        while (false !== ($entry = readdir($handle))) {
+            if ($entry != '.' && $entry != '..') {
+                $oldPath = $dir . DIRECTORY_SEPARATOR . $entry;
+                $newEntry = str_replace(' ', '_', $entry); // Замена пробела на _
+                $newPath = $dir . DIRECTORY_SEPARATOR . $newEntry;
+
+                // Переименовываем файл или папку
+                if ($oldPath !== $newPath) {
+                    rename($oldPath, $newPath);
+                }
+
+                // Если это директория, продолжаем рекурсивно
+                if (is_dir($newPath)) {
+                    replaceSpacesInNames($newPath);
+                }
+            }
+        }
+        closedir($handle);
+    }
 }

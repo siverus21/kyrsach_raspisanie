@@ -11,7 +11,7 @@
 
 <body style="height: 80vh;">
     <div class="iframe-block">
-        <iframe src="http://kyrsach/" frameborder="0" width="80%" height="100%"
+        <iframe src="http://kyrsach/excel.php/" frameborder="0" width="80%" height="100%"
             style="margin: 0 auto;"></iframe>
     </div>
 </body>

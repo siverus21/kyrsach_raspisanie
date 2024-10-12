@@ -76,3 +76,30 @@ function writeCache($cacheFile, $data)
         file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка: Путь к кэшу пустой.\n", FILE_APPEND);
     }
 }
+
+/**
+ * Проверка файла и возвращение массива
+ * @param string $path Путь к файлу
+ * @return array|string Массив данных или 'error'
+ */
+function checkCache($path)
+{
+    // Проверяем, существует ли файл
+    if (file_exists($path)) {
+        // Проверяем, можно ли его прочитать
+        if (is_readable($path)) {
+            // Получаем содержимое файла
+            $data = include $path;
+            // Проверяем, действительно ли данные являются массивом
+            if (is_array($data)) {
+                return $data;
+            } else {
+                return 'Содержимое файла - не массив.';
+            }
+        } else {
+            return 'Содержимое файла - не читаются';
+        }
+    } else {
+        return 'Такого файла нет';
+    }
+}
