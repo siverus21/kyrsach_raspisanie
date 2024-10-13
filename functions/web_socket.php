@@ -1,26 +1,57 @@
-<?
+<?php
 
-/**
- * Отправляет сообщение через WebSocket с обновленными данными
- * @param array $scheduleData Обновленные данные расписания
- */
-function sendWebSocketNotification($scheduleData)
+namespace App\Schedule;
+
+class WebSocketNotifier
 {
-    try {
-        // Подключаемся к WebSocket серверу
-        $wsClient = new WebSocket\Client("ws://kyrsach:8081");
+    private $wsClient;
 
-        // Формируем сообщение с обновлёнными данными
-        $message = json_encode([
-            'status' => 'updated',
-            'schedule' => $scheduleData
-        ]);
+    public function __construct($url)
+    {
+        $this->connect($url);
+    }
 
-        // Отправляем сообщение
-        $wsClient->send($message);
-        $wsClient->close();
-    } catch (Exception $e) {
-        // Логируем ошибку при отправке сообщения по WebSocket
-        file_put_contents(__DIR__ . '/webhook/webhook_logs.txt', date('Y-m-d H:i:s') . " - Ошибка WebSocket: " . $e->getMessage() . "\n", FILE_APPEND);
+    /**
+     * Устанавливает соединение с WebSocket сервером
+     * @param string $url URL WebSocket сервера
+     */
+    private function connect($url)
+    {
+        try {
+            $this->wsClient = new WebSocket\Client($url);
+        } catch (Exception $e) {
+            $this->logError("Ошибка подключения к WebSocket: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Отправляет сообщение через WebSocket с обновленными данными
+     * @param array $scheduleData Обновленные данные расписания
+     */
+    public function sendNotification($scheduleData)
+    {
+        try {
+            // Формируем сообщение с обновлёнными данными
+            $message = json_encode([
+                'status' => 'updated',
+                'schedule' => $scheduleData
+            ]);
+
+            // Отправляем сообщение
+            $this->wsClient->send($message);
+            $this->wsClient->close();
+        } catch (Exception $e) {
+            // Логируем ошибку при отправке сообщения по WebSocket
+            $this->logError("Ошибка при отправке сообщения по WebSocket: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Логирует ошибки в файл
+     * @param string $errorMessage Сообщение об ошибке
+     */
+    private function logError($errorMessage)
+    {
+        file_put_contents(__DIR__ . '/webhook/webhook_logs.txt', date('Y-m-d H:i:s') . " - $errorMessage\n", FILE_APPEND);
     }
 }

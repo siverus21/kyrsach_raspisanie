@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Функция для отправки AJAX-запроса
     function sendAjaxRequest() {
         let allLinks = Array.from(getSelect).map(select => select.value).join('/');
-        console.log(allLinks);
 
         // Проверка на наличие значений
         if (allLinks.trim() !== '') {
@@ -96,23 +95,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Функция для отправки AJAX-запроса на /ajax/render.php
     function sendAjaxRenderRequest() {
+        let allLinks = Array.from(getSelect).map(select => select.value).join('/');
+        console.log(allLinks);
+        
         fetch('/ajax/render.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ PATH: getSelect }) // Можно отправить необходимые данные
+            body: JSON.stringify({ PATH: allLinks }) // Отправляем необходимые данные
         })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Ошибка в запросе на render.php');
             }
-            // return response.json();
+            return response.text(); // Получаем ответ как текст (HTML)
         })
         .then(data => {
             console.log('Ответ от /ajax/render.php:', data);
-
-            // Здесь можно обработать данные, полученные от /ajax/render.php
+            
+            // Вставляем HTML в элемент с классом schedule-table
+            document.querySelector('.schedule-table').innerHTML = data;
         })
         .catch(error => {
             console.error('Ошибка при отправке запроса на render.php:', error);

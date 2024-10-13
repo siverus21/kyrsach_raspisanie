@@ -1,6 +1,8 @@
-<?php
+<?
+require '../vendor/autoload.php';
 require '../config.php';
-require FUNCTIONS_PATH . '/dir.php';
+
+use App\Schedule\DirectoryManager;
 
 // Получаем имя директории из запроса
 $data = json_decode(file_get_contents('php://input'), true);
@@ -9,8 +11,11 @@ if (!empty($data['LINK'])) {
 
     // Проверяем, существует ли такой путь
     if ($link && is_dir($link)) {
+        // Создаем объект DirectoryManager с этим путём
+        $directoryManager = new \App\Schedule\DirectoryManager($link);
+
         // Получаем имена вложенных папок
-        $subdirectories = getSubdirectories($link);
+        $subdirectories = $directoryManager->getSubdirectories();
 
         // Возвращаем массив вложенных папок в формате JSON
         echo json_encode($subdirectories, JSON_UNESCAPED_UNICODE);

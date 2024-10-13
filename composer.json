@@ -1,4 +1,9 @@
 {
+    "autoload": {
+        "psr-4": {
+            "App\\Schedule\\": "functions/"
+        }
+    },
     "require": {
         "phpoffice/phpspreadsheet": "^2.1",
         "cboden/ratchet": "^0.4.4",
