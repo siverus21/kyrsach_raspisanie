@@ -111,9 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             return response.text(); // Получаем ответ как текст (HTML)
         })
-        .then(data => {
-            console.log('Ответ от /ajax/render.php:', data);
-            
+        .then(data => {            
             // Вставляем HTML в элемент с классом schedule-table
             document.querySelector('.schedule-table').innerHTML = data;
         })

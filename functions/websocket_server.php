@@ -1,4 +1,5 @@
 <?
+require '../vendor/autoload.php';
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;

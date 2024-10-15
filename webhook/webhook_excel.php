@@ -1,9 +1,15 @@
 <?php
+require '../vendor/autoload.php';
+require '../config.php';
+
+use App\Schedule\CacheManager;
+use Exception;
+
 // Проверка прав на запись в директорию логов
-if (!is_writable(__DIR__)) {
-    error_log("Ошибка: Директория для логов не доступна для записи.");
-    exit('Ошибка: Директория для логов не доступна для записи.');
-}
+// if (!is_writable(__DIR__)) {
+//     file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка: Директория для логов не доступна для записи.\n", FILE_APPEND);
+//     exit('Ошибка: Директория для логов не доступна для записи.');
+// }
 
 // Проверяем метод запроса
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,11 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Начинаем обработку файла: $filePath\n", FILE_APPEND);
 
-                require_once FUNCTIONS_PATH . '/chache.php';
-                require_once VENDOR_PATH;
+                // $cache = new CacheManager()
 
                 // Обновление кэша
-                $scheduleData = updateCache($filePath, $cacheFile);
+                // $scheduleData = updateCache($filePath, $cacheFile);
 
                 // Логируем успешное обновление
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Успешно обработан файл: $filePath\n", FILE_APPEND);

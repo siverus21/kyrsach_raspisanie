@@ -2,6 +2,9 @@
 
 namespace App\Schedule;
 
+use WebSocket\Client;
+use Exception;
+
 class WebSocketNotifier
 {
     private $wsClient;
@@ -18,7 +21,7 @@ class WebSocketNotifier
     private function connect($url)
     {
         try {
-            $this->wsClient = new WebSocket\Client($url);
+            $this->wsClient = new Client($url);
         } catch (Exception $e) {
             $this->logError("Ошибка подключения к WebSocket: " . $e->getMessage());
         }
