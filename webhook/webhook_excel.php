@@ -3,7 +3,6 @@ require '../vendor/autoload.php';
 require '../config.php';
 
 use App\Schedule\CacheManager;
-use Exception;
 
 // Проверка прав на запись в директорию логов
 // if (!is_writable(__DIR__)) {
@@ -32,20 +31,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Проверяем наличие файла
         if (file_exists($filePath)) {
-            $fileName = str_replace(array("test", ".xlsm"), "", basename($filePath));
-            $cacheFile = CHACHE_PATH . '/schedule_cache_' . $fileName . '.php';
-
             try {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Начинаем обработку файла: $filePath\n", FILE_APPEND);
 
-                // $cache = new CacheManager()
+                $cache = new CacheManager($filePath);
 
-                // Обновление кэша
-                // $scheduleData = updateCache($filePath, $cacheFile);
+                $cache->updateCache($filePath);
 
                 // Логируем успешное обновление
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Успешно обработан файл: $filePath\n", FILE_APPEND);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка при обработке файла: {$e->getMessage()}\n", FILE_APPEND);
             }
         } else {

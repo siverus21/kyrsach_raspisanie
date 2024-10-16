@@ -77,7 +77,7 @@ class CacheManager
      * @param array $data Данные для кэширования
      * @param string $cacheFilePath Путь к файлу для кэша
      */
-    public function writeCache($data, $cacheFilePath)
+    private function writeCache($data, $cacheFilePath)
     {
         if (!empty($cacheFilePath)) {
 
