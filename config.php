@@ -9,3 +9,4 @@ define('VENDOR_PATH',    __DIR__ . '/vendor/');
 define('AUTOLOAD_PATH',  __DIR__ . '/vendor/autoload.php');
 define('WEBHOOK_PATH',   __DIR__ . '/webhook/');
 define('LOG_PATH',       __DIR__ . '/log/log.log');
+define('WS_SERVER_URL', 'ws://kyrsach:8081');
