@@ -1,9 +1,14 @@
 <?php
+require '../vendor/autoload.php';
+require '../config.php';
+
+use App\Schedule\CacheManager;
+
 // Проверка прав на запись в директорию логов
-if (!is_writable(__DIR__)) {
-    error_log("Ошибка: Директория для логов не доступна для записи.");
-    exit('Ошибка: Директория для логов не доступна для записи.');
-}
+// if (!is_writable(__DIR__)) {
+//     file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка: Директория для логов не доступна для записи.\n", FILE_APPEND);
+//     exit('Ошибка: Директория для логов не доступна для записи.');
+// }
 
 // Проверяем метод запроса
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,21 +31,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Проверяем наличие файла
         if (file_exists($filePath)) {
-            $fileName = str_replace(array("test", ".xlsm"), "", basename($filePath));
-            $cacheFile = CHACHE_PATH . '/schedule_cache_' . $fileName . '.php';
-
             try {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Начинаем обработку файла: $filePath\n", FILE_APPEND);
 
-                require_once FUNCTIONS_PATH . '/chache.php';
-                require_once VENDOR_PATH;
+                $cache = new CacheManager($filePath);
 
-                // Обновление кэша
-                $scheduleData = updateCache($filePath, $cacheFile);
+                $cache->updateCache($filePath);
 
                 // Логируем успешное обновление
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Успешно обработан файл: $filePath\n", FILE_APPEND);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка при обработке файла: {$e->getMessage()}\n", FILE_APPEND);
             }
         } else {

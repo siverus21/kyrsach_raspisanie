@@ -3,35 +3,30 @@
 namespace App\Schedule;
 
 use App\Schedule\ExcelProcessor;
+use App\Schedule\WebSocketNotifier;
 
 class CacheManager
 {
     private $cacheFile;
     private $excelProcessor;
+    private $webSocketNotifier;
 
     public function __construct($cacheFile)
     {
         $this->cacheFile = $cacheFile;
+        // Инициализация WebSocketNotifier с URL WebSocket сервера
+        $this->webSocketNotifier = new WebSocketNotifier(WS_SERVER_URL);
     }
 
-    /**
-     * Обновление кэша с данными из файла Excel
-     * @param string $inputFileName Путь к файлу Excel
-     * @return array Расписание и временные слоты или пустой массив в случае ошибки
-     */
     public function updateCache($inputFileName)
     {
         try {
-            // Проверка на существование файла Excel
             if (!file_exists($inputFileName)) {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Файл Excel не найден: $inputFileName\n", FILE_APPEND);
                 throw new \Exception("Файл Excel не найден: $inputFileName");
             }
 
-            // Создаем объект ExcelProcessor для работы с Excel файлом
             $this->excelProcessor = new ExcelProcessor($inputFileName, $this->cacheFile);
-
-            // Загружаем и парсим файл Excel
             $spreadsheet = $this->excelProcessor->loadSpreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
@@ -39,20 +34,18 @@ class CacheManager
 
             $scheduleData = $this->excelProcessor->parseSheet($sheet);
 
-            // Проверяем, что данные были успешно распарсены
             if (empty($scheduleData)) {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка: Расписание не найдено в файле: $inputFileName\n", FILE_APPEND);
                 throw new \Exception("Ошибка: Расписание не найдено в файле: $inputFileName");
             }
 
-            // Генерация пути к файлу кэша
             $cacheFilePath = $this->generateCacheFilePath($inputFileName);
-
-            // Записываем кэш
             $this->writeCache($scheduleData, $cacheFilePath);
 
-            // Логируем успешное обновление кэша
             file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Кэш обновлен: {$cacheFilePath}\n", FILE_APPEND);
+
+            // Отправка уведомления через WebSocket
+            $this->webSocketNotifier->sendNotification($inputFileName);
 
             return $scheduleData;
         } catch (\Exception $e) {
@@ -61,29 +54,15 @@ class CacheManager
         }
     }
 
-    /**
-     * Генерация пути к файлу кэша на основе имени Excel-файла
-     * @param string $inputFileName Путь к файлу Excel
-     * @return string Путь к файлу кэша с расширением .php
-     */
     private function generateCacheFilePath($inputFileName)
     {
-        // Меняем расширение файла на .php
         return preg_replace('/\.xls(x)?$/', '.php', $inputFileName);
     }
 
-    /**
-     * Запись данных в кэш
-     * @param array $data Данные для кэширования
-     * @param string $cacheFilePath Путь к файлу для кэша
-     */
-    public function writeCache($data, $cacheFilePath)
+    private function writeCache($data, $cacheFilePath)
     {
         if (!empty($cacheFilePath)) {
-
             $cacheFilePath = str_replace('excel', 'cache', $cacheFilePath);
-
-            // Проверка и создание директорий, если они не существуют
             $dir = dirname($cacheFilePath);
             if (!is_dir($dir)) {
                 mkdir($dir, 0777, true);
@@ -96,19 +75,11 @@ class CacheManager
         }
     }
 
-    /**
-     * Проверка файла и возвращение массива
-     * @return array|string Массив данных или 'error'
-     */
     public function checkCache()
     {
-        // Проверяем, существует ли файл
         if (file_exists($this->cacheFile)) {
-            // Проверяем, можно ли его прочитать
             if (is_readable($this->cacheFile)) {
-                // Получаем содержимое файла
                 $data = include $this->cacheFile;
-                // Проверяем, действительно ли данные являются массивом
                 if (is_array($data)) {
                     return $data;
                 } else {
