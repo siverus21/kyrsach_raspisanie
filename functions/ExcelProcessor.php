@@ -1,4 +1,4 @@
-<?
+<?php
 
 namespace App\Schedule;
 
@@ -19,19 +19,21 @@ class ExcelProcessor
     {
         $this->inputFileName = $inputFileName;
         $this->cacheFile = $cacheFile;
-        $this->cacheManager = new CacheManager($cacheFile);
+        $this->cacheManager = new CacheManager($cacheFile, new WebSocketNotifier());
     }
 
     /**
      * Загружает Excel файл и возвращает объект Spreadsheet
      * @return \PhpOffice\PhpSpreadsheet\Spreadsheet Объект Excel Spreadsheet
+     * @throws Exception Если файл не может быть загружен
      */
     public function loadSpreadsheet()
     {
         try {
             return IOFactory::load($this->inputFileName);
         } catch (Exception $e) {
-            throw $e;
+            file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка загрузки файла: {$this->inputFileName} - " . $e->getMessage() . "\n", FILE_APPEND);
+            throw new Exception("Ошибка загрузки файла: {$this->inputFileName}");
         }
     }
 
@@ -77,7 +79,7 @@ class ExcelProcessor
             }
             return $text;
         }
-        return $cellValue;
+        return (string)$cellValue; // Убедитесь, что возвращаемое значение - строка
     }
 
     /**

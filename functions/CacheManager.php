@@ -11,11 +11,10 @@ class CacheManager
     private $excelProcessor;
     private $webSocketNotifier;
 
-    public function __construct($cacheFile)
+    public function __construct($cacheFile, WebSocketNotifier $webSocketNotifier)
     {
         $this->cacheFile = $cacheFile;
-        // Инициализация WebSocketNotifier с URL WebSocket сервера
-        $this->webSocketNotifier = new WebSocketNotifier(WS_SERVER_URL);
+        $this->webSocketNotifier = $webSocketNotifier;
     }
 
     public function updateCache($inputFileName)
@@ -56,7 +55,7 @@ class CacheManager
 
     private function generateCacheFilePath($inputFileName)
     {
-        return preg_replace('/\.xls(x)?$/', '.php', $inputFileName);
+        return str_replace(['.xls', '.xlsm'], '.php', $inputFileName);
     }
 
     private function writeCache($data, $cacheFilePath)
