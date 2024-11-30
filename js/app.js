@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     let getSelect = document.querySelectorAll('select.choise__select');
-
+    window.CustomUpdateTable = false;
     // Функция для отправки AJAX-запроса
     function sendAjaxRequest() {
         let allLinks = Array.from(getSelect).map(select => select.value).join('/');
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Проверяем, является ли текущий select последним и содержит ли его значение ".xls"
-        if (index === getSelect.length - 1 && event.target.value.includes('.xls')) {
+        if (index === getSelect.length - 1 && (event.target.value.includes('.xls') || event.target.value.includes('.xlsm'))) {
             sendAjaxRenderRequest();
         }
     }
@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {            
             // Вставляем HTML в элемент с классом schedule-table
             document.querySelector('.schedule-table').innerHTML = data;
+            window.CustomUpdateTable = true;
         })
         .catch(error => {
             console.error('Ошибка при отправке запроса на render.php:', error);
@@ -140,18 +141,13 @@ function openWebSocket() {
         console.log("Успешное подключение к WebSocket-серверу");
     };
     
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        // Исправляем путь, заменяя обратные слеши на прямые и удаляя лишние символы
-        let fixedFilePath = data.file_path
-            .replace(/\\/g, '/')  // Заменяем все обратные слеши на прямые
-            .replace('D:/OSPanel/domains/kyrsach/excel', '')  // Удаляем начальный путь
-            .trim();  // Убираем лишние пробелы
-        
-        console.log(fixedFilePath);
-        
-        // Обновляем содержимое таблицы с расписанием
-        updateTable(fixedFilePath);
+    socket.onmessage = function (event) {
+        if (window.CustomUpdateTable) {
+            const data = JSON.parse(event.data);
+            let fixedFilePath = data.file_path.replace(/\\/g, '/');  // Заменяем все обратные слеши на прямые
+            console.log(fixedFilePath);
+            updateTable(fixedFilePath);
+        }
     };
     
     socket.onclose = function(event) {

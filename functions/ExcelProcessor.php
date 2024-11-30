@@ -1,9 +1,8 @@
-<?
+<?php
 
 namespace App\Schedule;
 
 require '../vendor/autoload.php'; // Подключаем автозагрузчик Composer
-require '../config.php'; // Подключаем конфигурационный файл
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\RichText;
@@ -25,13 +24,15 @@ class ExcelProcessor
     /**
      * Загружает Excel файл и возвращает объект Spreadsheet
      * @return \PhpOffice\PhpSpreadsheet\Spreadsheet Объект Excel Spreadsheet
+     * @throws Exception Если файл не может быть загружен
      */
     public function loadSpreadsheet()
     {
         try {
             return IOFactory::load($this->inputFileName);
         } catch (Exception $e) {
-            throw $e;
+            file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка загрузки файла: {$this->inputFileName} - " . $e->getMessage() . "\n", FILE_APPEND);
+            throw new Exception("Ошибка загрузки файла: {$this->inputFileName}");
         }
     }
 
@@ -77,7 +78,7 @@ class ExcelProcessor
             }
             return $text;
         }
-        return $cellValue;
+        return (string)$cellValue; // Убедитесь, что возвращаемое значение - строка
     }
 
     /**
@@ -159,15 +160,21 @@ class ExcelProcessor
      */
     public function processExcelFile($flagUpdateCache = false)
     {
-        // Если кэш существует и обновление не требуется, возвращаем кэшированные данные
+        $cacheFilePath = '../cache/' . $this->cacheFile;
+        // Проверяем кэш
         if (!$flagUpdateCache) {
-            $cacheData = $this->cacheManager->checkCache();
-            if ($cacheData !== 'Такого файла нет' && $cacheData !== 'Содержимое файла - не читаются' && $cacheData !== 'Содержимое файла - не массив.') {
-                return $cacheData;
+            $cacheData = CacheManager::checkCache($cacheFilePath);
+            if (is_array($cacheData)) {
+                file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Получены данные из кэша.\n", FILE_APPEND);
+                return $cacheData; // Кэш найден, возвращаем данные
             }
         }
+        // Если кэш отсутствует или требуется обновление
+        $inputFilePath = EXCEL_PATH . $this->inputFileName;
+        file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Обновление кэша для файла: $inputFilePath\n", FILE_APPEND);
 
-        // Обновляем и записываем кэш
-        return $this->cacheManager->updateCache(EXCEL_PATH . $this->inputFileName);
+        return $this->cacheManager->updateCache($inputFilePath);
     }
+
+
 }

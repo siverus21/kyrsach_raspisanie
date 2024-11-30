@@ -4,12 +4,6 @@ require '../config.php';
 
 use App\Schedule\CacheManager;
 
-// Проверка прав на запись в директорию логов
-// if (!is_writable(__DIR__)) {
-//     file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка: Директория для логов не доступна для записи.\n", FILE_APPEND);
-//     exit('Ошибка: Директория для логов не доступна для записи.');
-// }
-
 // Проверяем метод запроса
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Получен POST запрос.\n", FILE_APPEND);
@@ -35,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Начинаем обработку файла: $filePath\n", FILE_APPEND);
 
                 $cache = new CacheManager($filePath);
-
                 $cache->updateCache($filePath);
 
                 // Логируем успешное обновление

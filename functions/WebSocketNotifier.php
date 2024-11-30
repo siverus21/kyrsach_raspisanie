@@ -1,8 +1,7 @@
 <?php
-
 namespace App\Schedule;
 
-require '../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use WebSocket\Client;
 use Exception;
@@ -38,7 +37,6 @@ class WebSocketNotifier
             ]);
 
             $this->wsClient->send($message);
-            $this->wsClient->close();
         } catch (Exception $e) {
             $this->logError("Ошибка при отправке сообщения по WebSocket: " . $e->getMessage());
         }

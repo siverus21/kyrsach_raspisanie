@@ -1,4 +1,6 @@
-<?
+<?php
+require 'vendor/autoload.php';
+require 'config.php';
 require 'template/header.php';
 ?>
 <div class="choise">
@@ -11,4 +13,4 @@ require 'template/header.php';
 <div class="schedule-table">
 
 </div>
-<? require 'template/footer.php'; ?>
+<?php require 'template/footer.php'; ?>

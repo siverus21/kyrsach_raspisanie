@@ -1,6 +1,5 @@
 <?
-require __DIR__ . '/../config.php';
-require AUTOLOAD_PATH;
+require __DIR__ . '/../vendor/autoload.php';
 ?>
 
 <!DOCTYPE html>
