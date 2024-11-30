@@ -144,11 +144,8 @@ function openWebSocket() {
     socket.onmessage = function (event) {
         if (window.CustomUpdateTable) {
             const data = JSON.parse(event.data);
-            // Исправляем путь, заменяя обратные слеши на прямые и удаляя лишние символы
             let fixedFilePath = data.file_path.replace(/\\/g, '/');  // Заменяем все обратные слеши на прямые
             console.log(fixedFilePath);
-            
-            // Обновляем содержимое таблицы с расписанием
             updateTable(fixedFilePath);
         }
     };
