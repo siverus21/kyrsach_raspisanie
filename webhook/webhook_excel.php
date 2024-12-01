@@ -3,6 +3,7 @@ require '../vendor/autoload.php';
 require '../config.php';
 
 use App\Schedule\CacheManager;
+use App\Schedule\WebSocketNotifier;
 
 // Проверяем метод запроса
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -30,6 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $cache = new CacheManager($filePath);
                 $cache->updateCache($filePath);
+
+                try {
+                    $webSocketNotifier = new WebSocketNotifier(WS_SERVER_URL); // Подключаемся к серверу
+                    $webSocketNotifier->sendHelloWorld(); // Отправляем уведомление
+                } catch (\Exception $e) {
+                    file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка при отправке уведомления: {$e->getMessage()}\n", FILE_APPEND);
+                }
 
                 // Логируем успешное обновление
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Успешно обработан файл: $filePath\n", FILE_APPEND);

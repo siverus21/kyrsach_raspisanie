@@ -3,7 +3,7 @@ html {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 0
+    padding: 0;
 }
 
 .title{
@@ -33,4 +33,9 @@ html {
     text-decoration: unset;
     text-align: center;
     color: #fff;
+}
+.choise__select {
+    width: 150px;
+    height: 30px;
+    margin-right: 20px;
 }
