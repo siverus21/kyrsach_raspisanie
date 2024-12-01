@@ -34,10 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 try {
                     $webSocketNotifier = new WebSocketNotifier(WS_SERVER_URL); // Подключаемся к серверу
-                    $webSocketNotifier->sendHelloWorld(); // Отправляем уведомление
+                    $webSocketNotifier->sendUpdateFile($filePath);
                 } catch (\Exception $e) {
-                    file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка при отправке уведомления: {$e->getMessage()}\n", FILE_APPEND);
+                    file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Ошибка при обработке WebSocket: {$e->getMessage()}\n", FILE_APPEND);
                 }
+
 
                 // Логируем успешное обновление
                 file_put_contents(LOG_PATH, date('Y-m-d H:i:s') . " - Успешно обработан файл: $filePath\n", FILE_APPEND);
