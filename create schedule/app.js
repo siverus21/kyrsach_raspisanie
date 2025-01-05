@@ -15,7 +15,7 @@ function createBlock(content = 'New Block') {
     block.textContent = content;
     block.draggable = true;
     addDeleteButton(block);
-    attachBlockListeners(block);
+    attachBlockListeners(block);  // Привязываем обработчики событий для нового блока
     return block;
 }
 
@@ -47,9 +47,10 @@ function attachBlockListeners(block) {
         };
     });
 
+    // Обработчик для начала перетаскивания блока
     block.addEventListener('dragstart', (event) => {
         draggedBlock = block;
-        isNewBlock = false; // Это не новый блок
+        isNewBlock = false;  // Это уже существующий блок
     });
 }
 
@@ -84,6 +85,19 @@ columns.forEach(column => {
                 if (column.id !== 'block-list') {
                     modal.style.display = 'flex';
                     blockContentInput.value = '';
+
+                    // Сбрасываем старый обработчик и добавляем новый
+                    saveBlockButton.onclick = null;
+                    saveBlockButton.onclick = () => {
+                        const newBlockContent = blockContentInput.value.trim();
+                        if (!newBlockContent) return;
+
+                        const newBlock = createBlock(newBlockContent);
+                        column.appendChild(newBlock);
+
+                        modal.style.display = 'none';
+                        resetVariables(); // Сброс всех переменных после добавления блока
+                    };
                 }
             } else {
                 // Перемещаем существующий блок
@@ -105,14 +119,13 @@ saveBlockButton.onclick = () => {
     let newBlock;
     if (isNewBlock) {
         newBlock = createBlock(newBlockContent);
+        dropTargetColumn.appendChild(newBlock); // Добавляем новый блок
     } else if (draggedBlock) {
         draggedBlock.textContent = newBlockContent;
         addDeleteButton(draggedBlock); // Повторно добавляем кнопку удаления
-        newBlock = draggedBlock;
     }
 
-    dropTargetColumn.appendChild(newBlock);
-
+    // Закрываем модальное окно
     modal.style.display = 'none';
     resetVariables(); // Сброс всех переменных после добавления блока
 };
@@ -132,7 +145,7 @@ document.querySelectorAll('.block').forEach(block => {
 
 // Функция сброса всех переменных
 function resetVariables() {
-    draggedBlock = null;
-    isNewBlock = false;
-    dropTargetColumn = null;
+    draggedBlock = null;       // Сбрасываем текущий перетаскиваемый блок
+    isNewBlock = false;        // Сбрасываем флаг нового блока
+    dropTargetColumn = null;   // Сбрасываем целевую колонку
 }
