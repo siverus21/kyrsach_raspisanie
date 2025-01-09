@@ -2,21 +2,40 @@ const blockList = document.getElementById('block-list');
 const columns = document.querySelectorAll('.column');
 const modal = document.getElementById('modal');
 const blockContentInput = document.getElementById('block-content');
+const timeInput = document.getElementById('time');
+const fioInput = document.getElementById('fio');
 const saveBlockButton = document.getElementById('save-block');
 
 let draggedBlock = null;
 let isNewBlock = false;
 let dropTargetColumn = null;
 
-// Создание нового блока
-function createBlock(content = 'New Block') {
+// Создание нового блока с данными
+function createBlock(data = { content: 'New Block', time: '', fio: '' }) {
     const block = document.createElement('div');
     block.classList.add('block');
-    block.textContent = content;
     block.draggable = true;
+    block.dataset.content = data.content;
+    block.dataset.time = data.time;
+    block.dataset.fio = data.fio;
+
+    updateBlockContent(block);
     addDeleteButton(block);
-    attachBlockListeners(block);  // Привязываем обработчики событий для нового блока
+    attachBlockListeners(block); // Привязываем обработчики событий для нового блока
     return block;
+}
+
+// Функция обновления отображения контента блока
+function updateBlockContent(block) {
+    const content = block.dataset.content || '';
+    const time = block.dataset.time || '';
+    const fio = block.dataset.fio || '';
+    block.innerHTML = `
+        <div>${content}</div>
+        <div>${time}</div>
+        <div>${fio}</div>
+    `;
+    addDeleteButton(block);
 }
 
 // Функция добавления кнопки удаления
@@ -37,20 +56,25 @@ function attachBlockListeners(block) {
         if (block.parentElement && block.parentElement.id === 'block-list') return;
 
         modal.style.display = 'flex';
-        blockContentInput.value = block.textContent.replace('×', '').trim();
+
+        blockContentInput.value = block.dataset.content || '';
+        timeInput.value = block.dataset.time || '';
+        fioInput.value = block.dataset.fio || '';
 
         saveBlockButton.onclick = () => {
-            block.textContent = blockContentInput.value;
-            addDeleteButton(block); // Повторно добавляем кнопку удаления
+            block.dataset.content = blockContentInput.value;
+            block.dataset.time = timeInput.value;
+            block.dataset.fio = fioInput.value;
+
+            updateBlockContent(block);
             modal.style.display = 'none';
-            resetVariables();  // Сброс всех переменных после редактирования
+            resetVariables(); // Сброс всех переменных после редактирования
         };
     });
 
-    // Обработчик для начала перетаскивания блока
     block.addEventListener('dragstart', (event) => {
         draggedBlock = block;
-        isNewBlock = false;  // Это уже существующий блок
+        isNewBlock = false; // Это уже существующий блок
     });
 }
 
@@ -81,18 +105,22 @@ columns.forEach(column => {
 
         if (draggedBlock) {
             if (isNewBlock) {
-                // Новый блок, показываем модальное окно
                 if (column.id !== 'block-list') {
                     modal.style.display = 'flex';
                     blockContentInput.value = '';
+                    timeInput.value = '';
+                    fioInput.value = '';
 
-                    // Сбрасываем старый обработчик и добавляем новый
-                    saveBlockButton.onclick = null;
                     saveBlockButton.onclick = () => {
-                        const newBlockContent = blockContentInput.value.trim();
-                        if (!newBlockContent) return;
+                        const data = {
+                            content: blockContentInput.value.trim(),
+                            time: timeInput.value.trim(),
+                            fio: fioInput.value.trim(),
+                        };
 
-                        const newBlock = createBlock(newBlockContent);
+                        if (!data.content) return;
+
+                        const newBlock = createBlock(data);
                         column.appendChild(newBlock);
 
                         modal.style.display = 'none';
@@ -100,7 +128,6 @@ columns.forEach(column => {
                     };
                 }
             } else {
-                // Перемещаем существующий блок
                 if (column.id !== 'block-list') {
                     column.appendChild(draggedBlock);
                 }
@@ -109,32 +136,11 @@ columns.forEach(column => {
     });
 });
 
-// Сохранение нового блока или изменения в уже существующем
-saveBlockButton.onclick = () => {
-    if (!dropTargetColumn || dropTargetColumn.id === 'block-list') return;
-
-    const newBlockContent = blockContentInput.value.trim();
-    if (!newBlockContent) return;
-
-    let newBlock;
-    if (isNewBlock) {
-        newBlock = createBlock(newBlockContent);
-        dropTargetColumn.appendChild(newBlock); // Добавляем новый блок
-    } else if (draggedBlock) {
-        draggedBlock.textContent = newBlockContent;
-        addDeleteButton(draggedBlock); // Повторно добавляем кнопку удаления
-    }
-
-    // Закрываем модальное окно
-    modal.style.display = 'none';
-    resetVariables(); // Сброс всех переменных после добавления блока
-};
-
 // Закрытие модального окна по клику
 modal.addEventListener('click', (event) => {
     if (event.target === modal) {
         modal.style.display = 'none';
-        resetVariables();  // Сброс всех переменных при закрытии окна
+        resetVariables(); // Сброс всех переменных при закрытии окна
     }
 });
 
@@ -145,7 +151,7 @@ document.querySelectorAll('.block').forEach(block => {
 
 // Функция сброса всех переменных
 function resetVariables() {
-    draggedBlock = null;       // Сбрасываем текущий перетаскиваемый блок
-    isNewBlock = false;        // Сбрасываем флаг нового блока
-    dropTargetColumn = null;   // Сбрасываем целевую колонку
+    draggedBlock = null;
+    isNewBlock = false;
+    dropTargetColumn = null;
 }
