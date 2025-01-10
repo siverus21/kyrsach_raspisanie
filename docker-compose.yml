@@ -1,0 +1,92 @@
+version: '3.9' # Версия файла docker-compose
+
+# Определение сетей
+networks:
+    internal: # Внутренняя сеть для NGINX и PHP
+    postgres: # Отдельная сеть для PostgreSQL и PGAdmin
+
+# Определение сервисов
+services:
+    nginx:
+        image: nginx:stable-alpine
+        container_name: nginx
+        ports:
+          - "80:80"
+        volumes:
+          - ./sites:/var/www
+          - ./config/nginx:/etc/nginx/conf.d
+          - ./data/logs:/var/log/nginx/
+        depends_on:
+          - php
+          - postgres
+        networks:
+          - internal
+
+    php:
+        build:
+          context: ./config/php
+          dockerfile: Dockerfile
+        container_name: php
+        volumes:
+          - ./sites:/var/www
+          - ./config/php/php.ini:/usr/local/etc/php/php.ini
+        ports:
+          - "9000:9000"
+        networks:
+          - internal
+
+    postgres:
+        container_name: postgres_container
+        image: postgres:14.8-alpine3.18
+        command:
+          - "postgres"
+          - "-c"
+          - "max_connections=50"
+        environment:
+          POSTGRES_DB: "habrdb"
+          POSTGRES_USER: "habrpguser"
+          POSTGRES_PASSWORD: "pgpwd4habr"
+          PGDATA: "/var/lib/postgresql/data/pgdata"
+        volumes:
+          - ../2. Init Database:/docker-entrypoint-initdb.d
+          - habrdb-data:/var/lib/postgresql/data
+        ports:
+          - "5432:5432"
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U habrpguser -d habrdb"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 10s
+        restart: unless-stopped
+        deploy:
+          resources:
+            limits:
+              cpus: '1'
+              memory: 4G
+        networks:
+          - postgres
+
+    pgadmin:
+        container_name: pgadmin_container
+        image: dpage/pgadmin4:7.2
+        environment:
+          PGADMIN_DEFAULT_EMAIL: "habrpguser@habr.com"
+          PGADMIN_DEFAULT_PASSWORD: "pgadminpwd4habr"
+        volumes:
+          - pgadmin-data:/var/lib/pgadmin
+        ports:
+          - "5050:80"
+        restart: unless-stopped
+        deploy:
+          resources:
+            limits:
+              cpus: '0.5'
+              memory: 1G
+        networks:
+          - postgres
+
+# Определение томов
+volumes:
+  habrdb-data:
+  pgadmin-data:
