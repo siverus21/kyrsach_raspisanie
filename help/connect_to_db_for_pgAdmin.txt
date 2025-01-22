@@ -1,0 +1,7 @@
+Создайте новое подключение:
+Name: PostgresDB (любое название)
+Host: postgres_container (имя контейнера PostgreSQL в сети Docker)
+Port: 5432
+Username: habrpguser
+Password: pgpwd4habr
+Database: habrdb (по желанию, иначе оставьте пустым для подключения ко всем базам)
