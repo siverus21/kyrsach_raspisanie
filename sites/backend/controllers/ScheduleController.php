@@ -1,46 +1,40 @@
 <?php
-require_once '/var/www/backend/models/Schedule.php';
+
+namespace App\Controllers;
+
+use App\Models\Schedule;
 
 class ScheduleController
 {
     private $model;
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->model = new Schedule($db);
+        $this->model = new Schedule();
     }
 
-    // Отображение списка расписаний
-    public function listSchedules()
+    public function GetAllProgram()
     {
-        $schedules = $this->model->getAllSchedules();
-        include '../views/schedule/list.php';
+        return $this->model->GetAllProgram();
     }
 
-    // Отображение формы для создания расписания
-    public function createSchedule()
+    public function GetAllRoom()
     {
-        include '../views/schedule/create.php';
+        return $this->model->GetAllRoom();
     }
 
-    // Сохранение нового расписания
-    public function storeSchedule()
+    public function GetAllLector()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $title = $_POST['title'];
-            $description = $_POST['description'];
-            $date = $_POST['date'];
-            $time = $_POST['time'];
-            $this->model->createSchedule($title, $description, $date, $time);
-            header('Location: /');
-            exit();
-        }
+        return $this->model->GetAllLector();
     }
 
-    // Просмотр конкретного расписания
-    public function viewSchedule($id)
+    public function GetAllDiscipline()
     {
-        $schedule = $this->model->getScheduleById($id);
-        include '../views/schedule/view.php';
+        return $this->model->GetAllDiscipline();
+    }
+
+    public function UploadInfoDB($file, $nameTable)
+    {
+        return $this->model->UploadInfoDB($file, $nameTable);
     }
 }

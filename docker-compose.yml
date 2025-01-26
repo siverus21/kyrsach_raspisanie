@@ -23,9 +23,7 @@ services:
       - shared
 
   php:
-    build:
-      context: ./config/php
-      dockerfile: Dockerfile
+    build: ./config/php
     container_name: php
     volumes:
       - ./sites:/var/www

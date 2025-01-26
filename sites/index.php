@@ -1,31 +1,29 @@
 <?php
-require_once 'backend/db/database.php';
-require_once 'backend/controllers/ScheduleController.php';
+require './vendor/autoload.php';
 
-// Подключение к базе данных
-$db = getDatabaseConnection();
+use App\Controllers\ScheduleController;
 
 // Создание контроллера
-$controller = new ScheduleController($db);
+$controller = new ScheduleController();
+?>
 
-// Маршрутизация
-$action = $_GET['action'] ?? 'list';
+<!DOCTYPE html>
+<html lang="en">
 
-// switch ($action) {
-//     case 'create':
-//         $controller->createSchedule();
-//         break;
-//     case 'store':
-//         $controller->storeSchedule();
-//         break;
-//     case 'view':
-//         $id = $_GET['id'] ?? null;
-//         $controller->viewSchedule($id);
-//         break;
-//     default:
-//         $controller->listSchedules();
-//         break;
-// }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка CSV в базу данных</title>
+</head>
 
-// Закрытие соединения с базой данных
-pg_close($db);
+<body>
+    <h1>Загрузите CSV-файл</h1>
+    <form action="/ajax/add_db_data.php" method="post" enctype="multipart/form-data">
+        <label for="csv_file">Выберите файл CSV:</label>
+        <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+        <button type="submit">Загрузить</button>
+    </form>
+</body>
+<script src="./js/script.js" defer></script>
+
+</html>

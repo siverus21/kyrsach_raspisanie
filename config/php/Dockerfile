@@ -25,11 +25,19 @@ RUN apt-get update && apt-get install -y \
 # Устанавливаем Composer — менеджер зависимостей для PHP
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Меняем пользователя на www-data для повышения безопасности
-USER www-data:www-data
-
 # Устанавливаем рабочую директорию
 WORKDIR /var/www
+
+# Копируем файлы проекта в контейнер
+COPY . .
+
+# Выполняем установку зависимостей Composer от имени пользователя root
+RUN composer install
+
+RUN composer dump-autoload
+
+# Меняем пользователя на www-data для повышения безопасности
+USER www-data:www-data
 
 # Указываем команду для запуска PHP-FPM
 CMD ["php-fpm"]
