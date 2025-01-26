@@ -67,29 +67,81 @@ class Schedule
     public function UploadInfoDB($file, $nameTable)
     {
         if (($handle = fopen($file, 'r')) !== false) {
-            fgetcsv($handle, 1000, ',');
+            $dataFieldsName = fgetcsv($handle, 1000, ',');
+            $dataFieldsNameString = implode(', ', $dataFieldsName);
 
+            fgetcsv($handle, 1000, ',');
             // Чтение строк из CSV-файла
             while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-                echo "<pre>";
-                print_r($data);
-                echo "</pre>";
-                $name = trim($data[0]);
-                $code = trim($data[1]);
+
+                foreach ($data as $k => $v)
+                    $data[$k] = trim($v);
 
                 // SQL-запрос на вставку данных
-                $query = "INSERT INTO $nameTable (name, code) VALUES ($1, $2)";
-                // $result = pg_query_params($this->connection, $query, [$name, $code]);
+                $query = "INSERT INTO $nameTable (" . $dataFieldsNameString . ") VALUES (";
+                for ($i = 1; $i <= count($dataFieldsName); $i++) {
+                    $query .= "$" . $i;
+                }
+                $query .= ")";
 
-                // if (!$result) {
-                // echo "Ошибка вставки данных: " . pg_last_error($this->connection) . "<br>";
-                // }
+                $result = pg_query_params($this->connection, $query, $data);
+                if (!$result) {
+                    echo "Ошибка вставки данных: " . pg_last_error($this->connection) . "<br>";
+                }
             }
-
             fclose($handle);
             return "Данные успешно загружены в базу данных.";
         } else {
             return "Ошибка открытия файла.";
         }
     }
+
+    public function GetAllTablesName()
+    {
+        $query = "SELECT n.nspname, c.relname
+                  FROM pg_class c
+                  JOIN pg_namespace n ON n.oid = c.relnamespace
+                  WHERE c.relkind = 'r'
+                  AND n.nspname NOT IN('pg_catalog', 'information_schema')";
+        $result = pg_query($this->connection, $query);
+        if (!$result) {
+            die('Ошибка выполнения запроса: ' . pg_last_error($this->connection));
+        }
+        return pg_fetch_all($result) ?: [];
+    }
+
+    public function GetTablesFromWriteData()
+    {
+        $allowedTables = [
+            'room' => "Аудитории",
+            'lector' => "Преподаватели",
+            'program' => "Программы",
+            'discipline' => "Дисциплины"
+        ];
+
+        $allowedTablesString = "'" . implode("','", array_keys($allowedTables)) . "'";
+
+        $query = "SELECT n.nspname, c.relname
+              FROM pg_class c
+              JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE c.relkind = 'r'
+              AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+              AND c.relname IN ($allowedTablesString)";
+
+        $result = pg_query($this->connection, $query);
+        if (!$result) {
+            die('Ошибка выполнения запроса: ' . pg_last_error($this->connection));
+        }
+
+        $arResult = pg_fetch_all($result);
+
+        if ($arResult) {
+            foreach ($arResult as $key => $arItem) {
+                $arResult[$key] = $allowedTables[$arItem["relname"]];
+            }
+        }
+
+        return $arResult ?: [];
+    }
+
 }

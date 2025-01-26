@@ -37,4 +37,14 @@ class ScheduleController
     {
         return $this->model->UploadInfoDB($file, $nameTable);
     }
+
+    public function GetAllTablesName()
+    {
+        return $this->model->GetAllTablesName();
+    }
+
+    public function GetTablesFromWriteData()
+    {
+        return $this->model->GetTablesFromWriteData();
+    }
 }

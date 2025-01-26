@@ -17,11 +17,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log(result);
             } else {
                 console.error('Ошибка загрузки файла:', response.statusText);
-                alert('Ошибка загрузки файла');
             }
         } catch (error) {
             console.error('Ошибка сети:', error);
-            alert('Произошла ошибка сети');
         }
     });
 
