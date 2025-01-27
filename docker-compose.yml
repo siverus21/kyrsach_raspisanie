@@ -35,6 +35,8 @@ services:
         condition: service_healthy
     networks:
       - shared
+    command: >
+      sh -c "composer install && composer dump-autoload && php-fpm"
 
   postgres:
     container_name: postgres_container
