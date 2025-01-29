@@ -23,9 +23,13 @@ class Config
     public static $FOOTER_PATH;
 
     public static $STYLE_PATH = '/css/';
-    public static $SCRIPT_PATH = '/js/';
     public static $MAIN_STYLE_PATH;
+    public static $HEADER_STYLE_PATH;
+    public static $FOOTER_STYLE_PATH;
+
+    public static $SCRIPT_PATH = '/js/';
     public static $MAIN_SCRIPT_PATH;
+
 
     public static $COMPONENT_PATH;
 
@@ -35,8 +39,12 @@ class Config
         self::$COMPONENT_PATH = self::$LOCAL_SITE_PATH . '/backend/views/schedule/components/';
         self::$LOCAL_TEMPLATE_PATH = self::$LOCAL_SITE_PATH . '/backend/views/templates';
 
+
         self::$MAIN_STYLE_PATH = self::$STYLE_PATH . 'style.css';
         self::$MAIN_SCRIPT_PATH = self::$SCRIPT_PATH . 'script.js';
+
+        self::$HEADER_STYLE_PATH = self::$STYLE_PATH . 'header.css';
+        self::$FOOTER_STYLE_PATH = self::$STYLE_PATH . 'footer.css';
 
         self::$HEADER_PATH = self::$LOCAL_TEMPLATE_PATH . '/header.php';
         self::$FOOTER_PATH = self::$LOCAL_TEMPLATE_PATH . '/footer.php';

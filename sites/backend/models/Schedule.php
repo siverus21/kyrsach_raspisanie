@@ -57,7 +57,7 @@ class Schedule
 
     public function GetAllDiscipline()
     {
-        $result = pg_query($this->connection, "SELECT * FROM decsipline");
+        $result = pg_query($this->connection, "SELECT * FROM discipline");
         if (!$result) {
             die('Ошибка выполнения запроса: ' . pg_last_error($this->connection));
         }
