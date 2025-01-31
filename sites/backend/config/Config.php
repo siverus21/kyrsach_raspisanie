@@ -29,6 +29,7 @@ class Config
 
     public static $SCRIPT_PATH = '/js/';
     public static $MAIN_SCRIPT_PATH;
+    public static $CREATE_SCRIPT_PATH;
 
 
     public static $COMPONENT_PATH;
@@ -42,6 +43,7 @@ class Config
 
         self::$MAIN_STYLE_PATH = self::$STYLE_PATH . 'style.css';
         self::$MAIN_SCRIPT_PATH = self::$SCRIPT_PATH . 'script.js';
+        self::$CREATE_SCRIPT_PATH = self::$SCRIPT_PATH . 'create_schedule.js';
 
         self::$HEADER_STYLE_PATH = self::$STYLE_PATH . 'header.css';
         self::$FOOTER_STYLE_PATH = self::$STYLE_PATH . 'footer.css';

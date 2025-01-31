@@ -93,3 +93,34 @@
 .modal-content button:hover {
     background: #0056b3;
 }
+.modal-content__item {
+    position: relative;
+}
+
+.search-block {
+    position: absolute;
+    background-color: #fff;
+    display: block;
+    max-height: 200px;
+    visibility: hidden;
+    opacity: 0;
+    overflow-y: auto;
+    z-index: 1;
+    width: 510px;
+    left: -120px;
+}
+
+.search-block__li {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #c2c0c0;
+}
+
+.search-block__li:hover {
+    background-color: #e2e2e2;
+}
