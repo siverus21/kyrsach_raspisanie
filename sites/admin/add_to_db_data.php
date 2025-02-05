@@ -1,5 +1,5 @@
 <?php
-require './vendor/autoload.php';
+require '../vendor/autoload.php';
 
 use App\Controllers\ScheduleController;
 
@@ -24,7 +24,7 @@ $TablesData = $controller->GetTablesFromWriteData();
             <label for="selectTable">Выберите таблицу</label>
             <select name="selectTable" id="selectTable">
                 <? foreach ($TablesData as $name): ?>
-                    <option value="<?= $name ?>"><?= $name ?></option>
+                    <option value="<?= $name["eng"] ?>"><?= $name["ru"] ?></option>
                 <? endforeach; ?>
             </select>
         </div>
@@ -35,6 +35,6 @@ $TablesData = $controller->GetTablesFromWriteData();
         <button type="submit">Загрузить</button>
     </form>
 </body>
-<script src="./js/script.js" defer></script>
+<script src="script.js" defer></script>
 
 </html>

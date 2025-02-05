@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\DB;
 
 class Schedule
@@ -28,36 +29,9 @@ class Schedule
         return pg_fetch_assoc($result); // Возвращает одну строку
     }
 
-    public function GetAllProgram()
+    public function GetAllInfoTable($name)
     {
-        $result = pg_query($this->connection, "SELECT * FROM program");
-        if (!$result) {
-            die('Ошибка выполнения запроса: ' . pg_last_error($this->connection));
-        }
-        return pg_fetch_all($result) ?: [];
-    }
-
-    public function GetAllRoom()
-    {
-        $result = pg_query($this->connection, "SELECT * FROM room");
-        if (!$result) {
-            die('Ошибка выполнения запроса: ' . pg_last_error($this->connection));
-        }
-        return pg_fetch_all($result) ?: [];
-    }
-
-    public function GetAllLector()
-    {
-        $result = pg_query($this->connection, "SELECT * FROM lector");
-        if (!$result) {
-            die('Ошибка выполнения запроса: ' . pg_last_error($this->connection));
-        }
-        return pg_fetch_all($result) ?: [];
-    }
-
-    public function GetAllDiscipline()
-    {
-        $result = pg_query($this->connection, "SELECT * FROM discipline");
+        $result = pg_query($this->connection, "SELECT * FROM $name");
         if (!$result) {
             die('Ошибка выполнения запроса: ' . pg_last_error($this->connection));
         }
@@ -66,33 +40,73 @@ class Schedule
 
     public function UploadInfoDB($file, $nameTable)
     {
-        if (($handle = fopen($file, 'r')) !== false) {
-            $dataFieldsName = fgetcsv($handle, 1000, ',');
-            $dataFieldsNameString = implode(', ', $dataFieldsName);
+        // Определение типа файла
+        $fileType = IOFactory::identify($file);
+        $reader = IOFactory::createReader($fileType);
 
-            fgetcsv($handle, 1000, ',');
-            // Чтение строк из CSV-файла
-            while (($data = fgetcsv($handle, 1000, ",")) !== false) {
+        try {
+            // Чтение файла
+            $spreadsheet = $reader->load($file);
+            $sheet = $spreadsheet->getActiveSheet();
 
-                foreach ($data as $k => $v)
-                    $data[$k] = trim($v);
+            // Получение всех данных из первого листа
+            $dataFieldsName = [];
+            $data = [];
+            foreach ($sheet->getRowIterator() as $rowIndex => $row) {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(false); // Итерируем по всем ячейкам строки
 
-                // SQL-запрос на вставку данных
-                $query = "INSERT INTO $nameTable (" . $dataFieldsNameString . ") VALUES (";
-                for ($i = 1; $i <= count($dataFieldsName); $i++) {
-                    $query .= "$" . $i;
+                $rowData = [];
+                foreach ($cellIterator as $cell) {
+                    $rowData[] = $cell->getValue();
                 }
-                $query .= ")";
 
-                $result = pg_query_params($this->connection, $query, $data);
-                if (!$result) {
-                    echo "Ошибка вставки данных: " . pg_last_error($this->connection) . "<br>";
+                // Первая строка содержит имена полей
+                if ($rowIndex == 1) {
+                    $dataFieldsName = $rowData;
+                    $dataFieldsNameString = implode(', ', $dataFieldsName);
+                    continue;
                 }
+
+                // После первой строки - данные
+                $data[] = $rowData;
             }
-            fclose($handle);
-            return "Данные успешно загружены в базу данных.";
-        } else {
-            return "Ошибка открытия файла.";
+
+            // Если данные есть, начинаем вставку
+            if (!empty($data)) {
+                foreach ($data as $row) {
+                    // Преобразование данных в массив с удалёнными пробелами
+                    $row = array_map('trim', $row);
+
+                    // Преобразование типов данных в соответствии с типами столбцов
+                    foreach ($row as $key => $value) {
+                        // Если столбец id_training_format, приводим к integer
+                        if ($dataFieldsName[$key] === 'id_training_format' && is_numeric($value)) {
+                            $row[$key] = (int)$value;
+                        }
+                        // Здесь можно добавить другие преобразования для других типов данных
+                    }
+
+                    // Генерация SQL-запроса с уникальными параметрами для каждого столбца
+                    $query = "INSERT INTO \"{$nameTable}\" (" . $dataFieldsNameString . ") VALUES (";
+                    $query .= implode(", ", array_map(function ($i) {
+                        return '$' . ($i + 1);
+                    }, range(0, count($row) - 1)));
+                    $query .= ")";
+
+                    // Выполнение запроса с уникальными параметрами для каждого столбца
+                    $result = pg_query_params($this->connection, $query, $row);
+                    if (!$result) {
+                        echo "Ошибка вставки данных: " . pg_last_error($this->connection) . "<br>";
+                    }
+                }
+
+                return "Данные успешно загружены в базу данных.";
+            } else {
+                return "Нет данных для загрузки.";
+            }
+        } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
+            return "Ошибка чтения файла: " . $e->getMessage();
         }
     }
 
@@ -116,7 +130,8 @@ class Schedule
             'room' => "Аудитории",
             'lector' => "Преподаватели",
             'program' => "Программы",
-            'discipline' => "Дисциплины"
+            'discipline' => "Дисциплины",
+            'group' => "Группа"
         ];
 
         $allowedTablesString = "'" . implode("','", array_keys($allowedTables)) . "'";
@@ -137,7 +152,10 @@ class Schedule
 
         if ($arResult) {
             foreach ($arResult as $key => $arItem) {
-                $arResult[$key] = $allowedTables[$arItem["relname"]];
+                $arResult[$key] = array(
+                    "eng" => $arItem["relname"],
+                    "ru" => $allowedTables[$arItem["relname"]]
+                );
             }
         }
 

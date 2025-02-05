@@ -10,6 +10,13 @@ body {
     line-height: 1.6;
     background: linear-gradient(120deg, #f4f4f9, #e0e7ff);
     color: #333;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex-grow: 1;
 }
 
 /* Контейнер для контента */

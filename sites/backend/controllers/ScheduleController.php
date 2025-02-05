@@ -15,22 +15,32 @@ class ScheduleController
 
     public function GetAllProgram()
     {
-        return $this->model->GetAllProgram();
+        return $this->model->GetAllInfoTable("program");
     }
 
     public function GetAllRoom()
     {
-        return $this->model->GetAllRoom();
+        return $this->model->GetAllInfoTable("room");
     }
 
     public function GetAllLector()
     {
-        return $this->model->GetAllLector();
+        return $this->model->GetAllInfoTable("lector");
     }
 
     public function GetAllDiscipline()
     {
-        return $this->model->GetAllDiscipline();
+        return $this->model->GetAllInfoTable("discipline");
+    }
+
+    public function GetAllTrainingFormat()
+    {
+        return $this->model->GetAllInfoTable("training_format");
+    }
+
+    public function GetAllDirection()
+    {
+        return $this->model->GetAllInfoTable("direction");
     }
 
     public function UploadInfoDB($file, $nameTable)

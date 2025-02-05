@@ -4,6 +4,19 @@ $viewSchedule = new ViewSchedule();
 $arResult = $viewSchedule->ResultData();
 ?>
 
+<div class="select-schedule">
+    <? foreach ($arResult["SELECT_BLOCK"] as $arItem): ?>
+        <div class="select-schedule__item">
+            <label for="training-format"><?= $arItem["title"] ?></label>
+            <select name="training-format" id="training-format">
+                <? foreach ($arItem["items"] as $arSubItem): ?>
+                    <option value="<?= $arSubItem["id"] ?>"><?= $arSubItem["name"] ?></option>
+                <? endforeach; ?>
+            </select>
+        </div>
+    <? endforeach; ?>
+</div>
+
 <div class="view">
     <div class="view__container">
         <div class="column" id="block-list">
