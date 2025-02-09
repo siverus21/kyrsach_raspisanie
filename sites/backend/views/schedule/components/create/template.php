@@ -7,8 +7,8 @@ $arResult = $viewSchedule->ResultData();
 <div class="select-schedule">
     <? foreach ($arResult["SELECT_BLOCK"] as $arItem): ?>
         <div class="select-schedule__item">
-            <label for="training-format"><?= $arItem["title"] ?></label>
-            <select name="training-format" id="training-format">
+            <label for="<?= $arItem["name_for_id"] ?>"><?= $arItem["title"] ?></label>
+            <select name="<?= $arItem["name_for_id"] ?>" id="<?= $arItem["name_for_id"] ?>">
                 <? foreach ($arItem["items"] as $arSubItem): ?>
                     <option value="<?= $arSubItem["id"] ?>"><?= $arSubItem["name"] ?></option>
                 <? endforeach; ?>
@@ -36,7 +36,7 @@ $arResult = $viewSchedule->ResultData();
             <form class="modal-content__form" action="">
                 <div class="modal-content__item">
                     <label for="block-content">Название предмета</label>
-                    <input type="text" id="block-content" placeholder="Enter content">
+                    <input type="text" id="block-content" name="block-content" placeholder="Enter content">
                     <div class="search-block">
                         <ul class="search-block__ul">
                             <? foreach ($arResult["ALL_DISCIPLINE"] as $arItem): ?>
@@ -49,11 +49,11 @@ $arResult = $viewSchedule->ResultData();
                 </div>
                 <div class="modal-content__item">
                     <label for="time">Время</label>
-                    <input type="text" id="time" placeholder="Enter content">
+                    <input type="text" id="time" name="time" placeholder="Enter content">
                 </div>
                 <div class="modal-content__item">
                     <label for="fio">ФИО препода</label>
-                    <input type="text" id="fio" placeholder="Enter content">
+                    <input type="text" id="fio" name="fio" placeholder="Enter content">
                     <div class="search-block">
                         <ul class="search-block__ul">
                             <? foreach ($arResult["ALL_LECTOR"] as $arItem): ?>

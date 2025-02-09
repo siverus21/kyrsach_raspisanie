@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
         listItems.forEach(item => {
             item.addEventListener("click", function () {
                 input.value = item.dataset.value;
+                input.setAttribute('data-id', item.dataset.id);
                 searchBlock.style.opacity = "0";
                 searchBlock.style.visibility = "hidden";
             });

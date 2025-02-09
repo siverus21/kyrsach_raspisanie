@@ -40,11 +40,13 @@ class ViewSchedule
     {
         $trainingFormat = array(
             "title" => "Формат обучения",
+            "name_for_id" => "id_training_format",
             "items" => $format
         );
 
         $courseNumber = array(
             "title" => "Курс",
+            "name_for_id" => "course_number",
             "items" => array(
                 0 => array(
                     "id" => 1,
@@ -67,11 +69,13 @@ class ViewSchedule
 
         $program = array(
             "title" => "Кафедра",
+            "name_for_id" => "id_program",
             "items" => $programs,
         );
 
         $direction = array(
             "title" => "Уровень образования",
+            "name_for_id" => "id_direction",
             "items" => $this->controller->GetAllDirection(),
         );
 

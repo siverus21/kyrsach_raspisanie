@@ -25,6 +25,44 @@ document.addEventListener("DOMContentLoaded", function () {
         updateBlockContent(block);
         addDeleteButton(block);
         attachBlockListeners(block); // Привязываем обработчики событий для нового блока
+
+        const selectedValues = {};
+
+        document.querySelectorAll(".select-schedule select").forEach(select => {
+            selectedValues[select.name] = select.value;
+        });
+
+        const formData = new FormData(document.querySelector('.modal-content__form'));
+
+        // Преобразуем FormData в объект с проверкой наличия data-id
+        const formDataObj = {};
+        formData.forEach((value, key) => {
+            const inputElement = document.querySelector(`[name="${key}"]`);
+            if (inputElement && inputElement.dataset.id) {
+                formDataObj[key] = inputElement.dataset.id;
+            } else {
+                formDataObj[key] = value;
+            }
+        });
+
+        const combineData = {
+            ...formDataObj,
+            ...selectedValues,
+        }
+
+        const json = JSON.stringify(combineData);
+        console.log(json);
+
+        // async function Test(getSelectInfo) {
+        //     const response = await fetch('/ajax/add_db_data.php', {
+        //         method: 'POST',
+        //         body: getSelectInfo,
+        //     });
+        //     console.log(response);
+        // }
+
+        // Test(getSelectInfo);
+
         return block;
     }
 
